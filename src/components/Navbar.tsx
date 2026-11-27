@@ -17,26 +17,35 @@ import {
     DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
+import { authClient, useSession } from '@/lib/auth-client';
 
+
+    
 const links = [
     { href: '/', label: 'Home' },
     { href: '/menu', label: 'Menu' },
-    { href: '/contact', label: 'Contact' },
 ];
 
+
 // Replace with your real auth user (set to null when logged out)
-const user: { name: string; email: string; image?: string } | null = {
-    name: 'Noman',
-    email: 'noman@example.com',
-    image: '',
-};
+
 
 const Navbar = () => {
+    const {data: session} = useSession();
+    const user  = session?.user;
+
+    const loginLinks = [
+    { href: '/', label: 'Home' },
+    { href: '/menu', label: 'Menu' },
+    { href: `/dashboard/${session?.user?.role || 'customer'}`, label: 'Dashboard' },
+];
+
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         // call your signOut() here
+        await authClient.signOut();
     };
 
     const initials = user?.name.slice(0, 2).toUpperCase();
@@ -51,29 +60,49 @@ const Navbar = () => {
                 </Link>
 
                 {/* Desktop links */}
-                <ul className="hidden items-center gap-6 font-medium md:flex">
-                    {links.map((link) => (
-                        <li key={link.href}>
-                            <Link
-                                href={link.href}
-                                className={`transition-colors hover:text-red-500 ${
-                                    pathname === link.href ? 'text-red-500' : 'text-foreground'
-                                }`}
-                            >
-                                {link.label}
-                            </Link>
-                        </li>
-                    ))}
+                <ul className="hidden items-center gap-6 font-bold text-lg md:flex">
+                    {user ? (
+                        loginLinks.map((link) => (
+                            <li key={link.href}>
+                                <Link
+                                    href={link.href}
+                                    className={`transition-colors hover:text-red-500 ${
+                                        pathname === link.href ? 'text-red-500' : 'text-foreground'
+                                    }`}
+                                >
+                                    {link.label}
+                                </Link>
+                            </li>
+                        ))
+                    ) : (
+                        links.map((link) => (
+                            <li key={link.href}>
+                                <Link
+                                    href={link.href}
+                                    className={`transition-colors hover:text-red-500 ${
+                                        pathname === link.href ? 'text-red-500' : 'text-foreground'
+                                    }`}
+                                >
+                                    {link.label}
+                                </Link>
+                            </li>
+                        ))
+                    )}
                 </ul>
 
                 {/* Desktop auth */}
                 <div className="hidden items-center gap-3 md:flex">
                     {user ? (
+                        <>
+                        <Button variant="ghost"> <span className="text-sm">{user.name}</span></Button>
+                        <Button variant="destructive" onClick={handleLogout}>
+                            Logout
+                        </Button>
                         <DropdownMenu>
                             {/* Trigger is already a <button>, so no wrapper needed */}
                             <DropdownMenuTrigger className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-red-500">
                                 <Avatar>
-                                    <AvatarImage src={user.image} alt={user.name} />
+                                    <AvatarImage src={user.image ?? undefined} alt={user.name} />
                                     <AvatarFallback>{initials}</AvatarFallback>
                                 </Avatar>
                             </DropdownMenuTrigger>
@@ -81,7 +110,7 @@ const Navbar = () => {
                                 <DropdownMenuGroup>
                                     <DropdownMenuLabel className="flex items-center gap-3">
                                         <Avatar>
-                                            <AvatarImage src={user.image} alt={user.name} />
+                                            <AvatarImage src={user.image ?? undefined} alt={user.name} />
                                             <AvatarFallback>{initials}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex flex-col">
@@ -103,6 +132,8 @@ const Navbar = () => {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        </>
+                       
                     ) : (
                         <>
                             <Button variant="ghost" nativeButton={false} render={<Link href="/signin" />}>
@@ -135,7 +166,7 @@ const Navbar = () => {
                             {user && (
                                 <div className="mb-3 flex items-center gap-3 border-b pb-3">
                                     <Avatar>
-                                        <AvatarImage src={user.image} alt={user.name} />
+                                        <AvatarImage src={user.image ?? undefined} alt={user.name} />
                                         <AvatarFallback>{initials}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">

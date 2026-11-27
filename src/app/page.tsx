@@ -1,10 +1,11 @@
-import Image from "next/image";
+import Hero from "@/components/Hero";
+import HeroIconPage from "@/components/HeroIcon";
 
 export default function Home() {
   return (
-    <div>
-      <h1 className="text-3xl font-bold">Welcome to Next.js!</h1>
-      Home Page
-    </div>
+    <main>
+      <Hero />
+      <HeroIconPage />
+    </main>
   );
 }

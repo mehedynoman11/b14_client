@@ -32,7 +32,7 @@ const SignUpPage = () => {
         }
         const signUpData = {
             ...form,
-            role,
+            accountType: role,
         }
         setLoading(true)
         const { data, error } = await authClient.signUp.email(signUpData)
